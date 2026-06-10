@@ -1,0 +1,19 @@
+# Compiled binaries
+HubLauncher
+HubLauncher.exe
+HubLauncherMac
+HubLauncherLinux
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test/Monitored directories
+InternalTools/
+
+# OS/IDE settings
+.DS_Store
+.vscode/
+.idea/
+.env

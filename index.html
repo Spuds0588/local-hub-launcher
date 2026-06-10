@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO Meta Tags -->
+    <title>Universal Local Hub Launcher - Zero-Admin Desktop App Gateway</title>
+    <meta name="description" content="Deploy offline, single-file HTML tools with persistent origins and zero system administration. A lightweight, compile-to-binary loopback web gateway consuming under 15MB RAM.">
+    <meta name="keywords" content="local hub launcher, offline web server, local html tools, developer launchpad, sandboxed localhost, zero-administration gateway, go webserver, offline dashboard">
+    <meta name="author" content="Corey Burns">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Universal Local Hub Launcher - Zero-Admin Desktop App Gateway">
+    <meta property="og:description" content="Deploy offline, single-file HTML tools with persistent origins and zero administration. Compiled Go binary, under 15MB RAM.">
+    <meta property="og:image" content="assets/logo.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Universal Local Hub Launcher - Zero-Admin Desktop App Gateway">
+    <meta property="twitter:description" content="Deploy offline, single-file HTML tools with persistent origins and zero administration. Compiled Go binary, under 15MB RAM.">
+    <meta property="twitter:image" content="assets/logo.png">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/logo.png">
+
+    <style>
+        :root {
+            --bg-base: #060b13;
+            --bg-surface: #0e1524;
+            --bg-surface-elevated: #151e2e;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(56, 189, 248, 0.3);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --primary: #38bdf8;
+            --primary-glow: rgba(56, 189, 248, 0.15);
+            --secondary: #8b5cf6;
+            --accent: #6366f1;
+            --success: #10b981;
+            --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Glow Backgrounds */
+        .glow-orb {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--primary-glow) 0%, rgba(6, 11, 19, 0) 70%);
+            z-index: -1;
+            pointer-events: none;
+            filter: blur(60px);
+        }
+        .glow-orb-1 { top: -200px; right: -100px; }
+        .glow-orb-2 { top: 600px; left: -200px; }
+
+        header {
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(6, 11, 19, 0.8);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+
+        .logo-img {
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+        }
+
+        .logo-text {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .logo-badge {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 12px;
+            text-transform: uppercase;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .btn-github {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary) !important;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .btn-github:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+        }
+
+        /* Hero Section */
+        .hero {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 6rem 2rem 4rem 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        @media (max-width: 968px) {
+            .hero {
+                grid-template-columns: 1fr;
+                padding-top: 3rem;
+                gap: 3rem;
+                text-align: center;
+            }
+            .hero-actions {
+                justify-content: center;
+            }
+        }
+
+        .hero-content h1 {
+            font-family: var(--font-display);
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -1.5px;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #fff 40%, var(--primary) 70%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @media (max-width: 600px) {
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+        }
+
+        .hero-content p {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            max-width: 540px;
+        }
+
+        @media (max-width: 968px) {
+            .hero-content p {
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1.75rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
+        }
+
+        .btn-secondary {
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-primary);
+            padding: 0.75rem 1.75rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--text-secondary);
+        }
+
+        /* Floating App Mockup (Hero Right) */
+        .hero-mockup {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mockup-wrapper {
+            background: linear-gradient(135deg, var(--bg-surface), var(--bg-surface-elevated));
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 50px rgba(56, 189, 248, 0.05);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .mockup-wrapper:hover {
+            transform: translateY(-5px);
+            border-color: var(--border-hover);
+        }
+
+        .mockup-header {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+
+        .mockup-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .dot-red { background-color: #ef4444; }
+        .dot-yellow { background-color: #f59e0b; }
+        .dot-green { background-color: #10b981; }
+
+        .mockup-title {
+            margin-left: 10px;
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .mockup-body {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .mockup-stat {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: var(--primary);
+            display: flex;
+            justify-content: space-between;
+        }
+        .mockup-stat span { color: var(--text-secondary); }
+
+        .mockup-terminal {
+            background: #05080e;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #10b981;
+            overflow-x: auto;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .mockup-terminal .comment { color: var(--text-muted); }
+        .mockup-terminal .command { color: #f8fafc; }
+
+        /* Features Section */
+        .features {
+            max-width: 1200px;
+            margin: 4rem auto;
+            padding: 4rem 2rem;
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 4rem auto;
+        }
+
+        .section-header h2 {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 1rem;
+        }
+
+        .section-header p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--border-hover);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(56, 189, 248, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Interactive Simulator Section */
+        .simulator-section {
+            background: linear-gradient(180deg, var(--bg-base) 0%, var(--bg-surface) 100%);
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 6rem 2rem;
+        }
+
+        .simulator-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .browser-mockup {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .browser-bar {
+            background: #1e293b;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border-bottom: 1px solid #334155;
+        }
+
+        .browser-address {
+            background: #0f172a;
+            border-radius: 6px;
+            padding: 0.25rem 1rem;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: var(--primary);
+            flex-grow: 1;
+            max-width: 600px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .address-lock {
+            color: var(--success);
+            font-size: 0.75rem;
+        }
+
+        .browser-content {
+            padding: 2.5rem 2rem;
+            background: #0f172a;
+            min-height: 400px;
+            position: relative;
+        }
+
+        .browser-content h3 {
+            font-family: var(--font-display);
+            font-size: 1.75rem;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .browser-content p.subtitle {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 1rem;
+        }
+
+        .sim-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .sim-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 180px;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .sim-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+
+        .sim-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .sim-meta {
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .btn-sim-launch {
+            background: #0284c7;
+            color: #fff;
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-sim-launch:hover {
+            background: #0369a1;
+        }
+
+        /* Launch Overlay Alert */
+        .launch-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(6, 11, 19, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+            padding: 2rem;
+        }
+
+        .launch-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .overlay-card {
+            background: var(--bg-surface-elevated);
+            border: 1px solid var(--primary);
+            border-radius: 12px;
+            padding: 2.5rem;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.2);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .launch-overlay.active .overlay-card {
+            transform: scale(1);
+        }
+
+        .overlay-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: pulse 1.5s infinite;
+        }
+
+        .overlay-card h4 {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .overlay-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .overlay-headers {
+            background: #05080e;
+            border-radius: 6px;
+            padding: 0.75rem;
+            font-family: monospace;
+            font-size: 0.8rem;
+            text-align: left;
+            margin-bottom: 1.5rem;
+            color: #10b981;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-close-overlay {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .btn-close-overlay:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Build & Setup Section */
+        .setup-section {
+            max-width: 900px;
+            margin: 6rem auto;
+            padding: 0 2rem;
+        }
+
+        .tabs-header {
+            display: flex;
+            gap: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.2s;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: var(--primary);
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        .code-box {
+            background: #0b0f19;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.5rem;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: #e2e8f0;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        /* FAQ Section (AEO) */
+        .faq-section {
+            max-width: 800px;
+            margin: 6rem auto;
+            padding: 0 2rem;
+        }
+
+        .faq-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .faq-item {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.5rem;
+        }
+
+        .faq-item h3 {
+            font-family: var(--font-display);
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .faq-item p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        footer {
+            border-top: 1px solid var(--border-color);
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            background: #05080e;
+        }
+
+        footer p {
+            margin-bottom: 1rem;
+        }
+
+        footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        footer a:hover {
+            color: var(--primary);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+
+    <!-- Structured JSON-LD Data for AEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Universal Local Hub Launcher",
+      "operatingSystem": "Windows, macOS, Linux",
+      "applicationCategory": "DeveloperApplication",
+      "releaseNotes": "https://github.com/Spuds0588/local-hub-launcher/blob/main/README.md",
+      "offers": {
+        "@type": "Offer",
+        "price": "0.00",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Corey Burns",
+        "url": "https://github.com/Spuds0588"
+      },
+      "description": "An offline, zero-administration desktop application gateway that monitors a local directory and dynamically serves available HTML tools on a fixed local address (127.0.0.1:8999) using sandboxed origins.",
+      "softwareVersion": "1.0.0",
+      "license": "https://opensource.org/licenses/MIT"
+    }
+    </script>
+</head>
+<body>
+
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+
+    <header>
+        <div class="nav-container">
+            <a href="#" class="logo-group">
+                <img src="assets/logo.png" alt="Local Hub Launcher Logo" class="logo-img">
+                <span class="logo-text">Local Hub Launcher</span>
+                <span class="logo-badge">v1.0</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#demo">Interactive Demo</a></li>
+                <li><a href="#setup">Setup</a></li>
+                <li><a href="#faq">FAQ</a></li>
+                <li>
+                    <a href="https://github.com/Spuds0588/local-hub-launcher" target="_blank" class="btn-github">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.162 22 16.418 22 12c0-5.523-4.477-10-10-10z" />
+                        </svg>
+                        GitHub
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Universal Local Hub Launcher</h1>
+                <p>Deploy a zero-administration, offline desktop gateway for your web utility tools. Dynamically serves single-file HTML applications from a local registry directory with sandboxed security origins.</p>
+                <div class="hero-actions">
+                    <a href="#setup" class="btn-primary">Get Started</a>
+                    <a href="https://github.com/Spuds0588/local-hub-launcher" target="_blank" class="btn-secondary">GitHub Repository</a>
+                </div>
+            </div>
+            <div class="hero-mockup">
+                <div class="mockup-wrapper">
+                    <div class="mockup-header">
+                        <span class="mockup-dot dot-red"></span>
+                        <span class="mockup-dot dot-yellow"></span>
+                        <span class="mockup-dot dot-green"></span>
+                        <span class="mockup-title">HubLauncher (Native Engine)</span>
+                    </div>
+                    <div class="mockup-body">
+                        <div class="mockup-stat">
+                            <span>Memory Consumption</span>
+                            <strong>11.4 MB</strong>
+                        </div>
+                        <div class="mockup-stat">
+                            <span>CPU Usage (Idle)</span>
+                            <strong>0.00%</strong>
+                        </div>
+                        <div class="mockup-terminal">
+                            <span class="comment">// Starting secure application gateway...</span><br>
+                            <span class="command">$ HubLauncher.exe</span><br>
+                            <span style="color: var(--primary)">[INFO] Registry monitored: C:\Users\IT\InternalTools</span><br>
+                            <span style="color: var(--primary)">[INFO] Bounded successfully to 127.0.0.1:8999</span><br>
+                            <span style="color: #e2e8f0;">[SYSTEM] Spawning default web browser...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="features">
+            <div class="section-header">
+                <h2>Designed for High-Compliance Workstations</h2>
+                <p>Perfect for enterprise, healthcare, financial, and military environments with restricted administrative profiles.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                            <path d="M9 17V7l7 5-7 5z" />
+                        </svg>
+                    </div>
+                    <h3>Zero Administration</h3>
+                    <p>Compiles to a raw native binary with zero external runtimes required (no Node.js, Python, or WebKit runtime installer needed).</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                        </svg>
+                    </div>
+                    <h3>Negligible Footprint</h3>
+                    <p>Uses optimized native Go threads. Operates on under 15MB RAM and 0% idle CPU to respect restricted desktop resources.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                    </div>
+                    <h3>Ironclad Isolation</h3>
+                    <p>Binds strictly to 127.0.0.1. Prevent outbound network requests while serving your HTML tools under insulated local origins.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                        </svg>
+                    </div>
+                    <h3>Direct Folder Mapping</h3>
+                    <p>Drop any single-file HTML workspace utility into the monitored directory and watch it instantly propagate as a dashboard app card.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Simulator -->
+        <section id="demo" class="simulator-section">
+            <div class="simulator-container">
+                <div class="section-header">
+                    <h2>Experience the Hub Dashboard</h2>
+                    <p>Click "Launch Tool" below to see how the Local Hub handles tab sandboxing and isolates browser storage.</p>
+                </div>
+                <div class="browser-mockup">
+                    <div class="browser-bar">
+                        <div class="mockup-dot dot-red"></div>
+                        <div class="mockup-dot dot-yellow"></div>
+                        <div class="mockup-dot dot-green"></div>
+                        <div class="browser-address">
+                            <span class="address-lock">🔒</span> http://127.0.0.1:8999/
+                        </div>
+                    </div>
+                    <div class="browser-content">
+                        <h3>⚡ Internal Application Hub</h3>
+                        <p class="subtitle">Secure, offline environment serving isolated utility apps. Tool Directory: <code>~/InternalTools</code></p>
+                        
+                        <div class="sim-grid">
+                            <div class="sim-card">
+                                <div>
+                                    <div class="sim-title">Database Inspector</div>
+                                    <div class="sim-meta">File: sqlite_viewer.html</div>
+                                </div>
+                                <button class="btn-sim-launch" onclick="simulateLaunch('Database Inspector', 'sqlite_viewer.html')">Launch Tool</button>
+                            </div>
+                            <div class="sim-card">
+                                <div>
+                                    <div class="sim-title">JSON Processor</div>
+                                    <div class="sim-meta">File: json_formatter.html</div>
+                                </div>
+                                <button class="btn-sim-launch" onclick="simulateLaunch('JSON Processor', 'json_formatter.html')">Launch Tool</button>
+                            </div>
+                            <div class="sim-card">
+                                <div>
+                                    <div class="sim-title">API Sandbox Client</div>
+                                    <div class="sim-meta">File: rest_client.html</div>
+                                </div>
+                                <button class="btn-sim-launch" onclick="simulateLaunch('API Sandbox Client', 'rest_client.html')">Launch Tool</button>
+                            </div>
+                        </div>
+
+                        <!-- Simulated Launch Overlay -->
+                        <div class="launch-overlay" id="launchOverlay">
+                            <div class="overlay-card">
+                                <div class="overlay-icon">🚀</div>
+                                <h4 id="overlayTitle">Launching Tool</h4>
+                                <p>The gateway serves the file directly with HTTP headers that isolate it from other files in the same registry.</p>
+                                <div class="overlay-headers">
+                                    <strong>HTTP/1.1 200 OK</strong><br>
+                                    X-Content-Type-Options: nosniff<br>
+                                    X-Frame-Options: DENY<br>
+                                    Content-Type: text/html; charset=utf-8<br>
+                                    Origin-Sandbox: Isolated
+                                </div>
+                                <button class="btn-close-overlay" onclick="closeOverlay()">Close Sandboxed Tab</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Compilation and Packaging -->
+        <section id="setup" class="setup-section">
+            <div class="section-header">
+                <h2>Build & Deployment Setup</h2>
+                <p>Compile production binaries for any workspace operating system directly from source.</p>
+            </div>
+            
+            <div class="tabs-header">
+                <button class="tab-btn active" onclick="switchTab(event, 'win-tab')">Windows</button>
+                <button class="tab-btn" onclick="switchTab(event, 'mac-tab')">macOS</button>
+                <button class="tab-btn" onclick="switchTab(event, 'linux-tab')">Linux</button>
+            </div>
+
+            <div id="win-tab" class="tab-pane active">
+                <div class="code-box">
+                    <button class="copy-btn" onclick="copyCode('win-code')">Copy</button>
+                    <pre id="win-code"># Compile optimized, silent background executable for Windows (stripping debug info)
+GOOS=windows GOARCH=amd64 go build -ldflags="-s -w -H=windowsgui" -o HubLauncher.exe main.go</pre>
+                </div>
+                <div style="margin-top: 1.5rem; color: var(--text-secondary); font-size: 0.95rem;">
+                    <p>💡 <code>-H=windowsgui</code> prevents the blank console/command window from opening, launching the server silently in the background.</p>
+                </div>
+            </div>
+
+            <div id="mac-tab" class="tab-pane">
+                <div class="code-box">
+                    <button class="copy-btn" onclick="copyCode('mac-code')">Copy</button>
+                    <pre id="mac-code"># Compile optimized executable for Apple Darwin (stripping debug symbols)
+GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o HubLauncherMac main.go</pre>
+                </div>
+            </div>
+
+            <div id="linux-tab" class="tab-pane">
+                <div class="code-box">
+                    <button class="copy-btn" onclick="copyCode('linux-code')">Copy</button>
+                    <pre id="linux-code"># Compile executable for standard Linux distributions
+GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o HubLauncherLinux main.go</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- AEO Optimized FAQ Section -->
+        <section id="faq" class="faq-section">
+            <div class="section-header">
+                <h2>Frequently Asked Questions</h2>
+                <p>AEO/Search Agent compatible architecture details.</p>
+            </div>
+            <div class="faq-list">
+                <div class="faq-item">
+                    <h3>What is the Universal Local Hub Launcher?</h3>
+                    <p>It is a self-contained, zero-administration desktop application gateway written in Go. It dynamically serves locally saved single-file HTML workspace utility tools through a central loopback address (127.0.0.1:8999), bypassing the need to install runtime engines like Node.js or Python.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>How does it improve developer tool security?</h3>
+                    <p>Standard local files loaded via <code>file://</code> URLs can share credentials, cookies, and local data across folders. The Local Hub Launcher serves apps on independent query links and sets strict HTTP headers (<code>X-Content-Type-Options: nosniff</code> and <code>X-Frame-Options: DENY</code>) to insulate applications from one another.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>What is the system overhead of this launcher?</h3>
+                    <p>It is designed to consume less than 15MB of RAM and 0% idle CPU. Because it relies on the user's native web browser instead of packing a built-in Electron runtime, it eliminates massive disk footprint and memory leak vulnerabilities.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>Does it require administrative privileges to install?</h3>
+                    <p>No. It compiles into a single executable that does not register custom background drivers, write to system registry keys, or require administrative privileges, making it easy to deploy on locked-down enterprise machines via standard MDM systems.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Corey Burns. Released under the MIT License.</p>
+        <p><a href="https://github.com/Spuds0588/local-hub-launcher">GitHub Repository</a> &bull; <a href="#features">Features</a> &bull; <a href="#demo">Interactive Simulator</a></p>
+    </footer>
+
+    <script>
+        function simulateLaunch(name, filename) {
+            document.getElementById('overlayTitle').innerText = 'Launched ' + name;
+            document.getElementById('launchOverlay').classList.add('active');
+        }
+
+        function closeOverlay() {
+            document.getElementById('launchOverlay').classList.remove('active');
+        }
+
+        function switchTab(evt, tabId) {
+            const panes = document.querySelectorAll('.tab-pane');
+            const buttons = document.querySelectorAll('.tab-btn');
+            
+            panes.forEach(pane => pane.classList.remove('active'));
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        function copyCode(id) {
+            const text = document.getElementById(id).innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Command copied to clipboard!');
+            });
+        }
+    </script>
+</body>
+</html>
