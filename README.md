@@ -1,4 +1,66 @@
-# Universal Local Hub Launcher
+# Universal Local Hub Launcher – Your Personal, Secure Tool Hub
+
+<p align="center"><img src="assets/logo.png" width="120" height="120" alt="Hub Logo"></p>
+
+**Why use the Hub?**
+- **Everything stays on your machine.** The launcher never sends data out—your tools run locally, isolated behind the loop‑back interface (`127.0.0.1`).
+- **Zero‑admin install.** No system‑wide packages, no Node, no Python. Just download a single executable for Windows, macOS, or Linux and run it.
+- **Secure sandbox.** By serving tools via `http://127.0.0.1:8999` we avoid the `file://` protocol and its cookie/local‑storage leakage.
+- **Instant discovery.** Drop any single‑file `.html` tool into the `InternalTools` folder and the hub instantly shows a card for it.
+
+---
+
+## 🚀 Quick Start for the Vibe‑Coder
+1. **Pick your platform** – scroll down to the *Downloads* section and grab the binary for your OS.
+2. **Extract & run** – place the executable anywhere you like, double‑click it. The hub will pop a tiny tray icon (neon cyan‑violet gradient) that you can click for a quick menu:
+   - **Open Hub Dashboard** – launches the web UI in your default browser.
+   - **Open Tools Folder** – opens the `InternalTools` folder so you can drop new HTML tools.
+   - **Exit** – shuts the server down.
+3. **Add tools** – copy any `.html` file (e.g., a JSON formatter or a tiny REPL) into the `InternalTools` folder. The dashboard updates automatically.
+
+---
+
+## 📥 Downloads – Grab the Executable
+| OS | Asset |
+|---|---|
+| Windows (64‑bit) | [HubLauncher‑windows‑amd64.exe](https://github.com/Spuds0588/local-hub-launcher/releases/download/v1.0.0/HubLauncher-windows-amd64.exe) |
+| macOS (Intel) | [HubLauncher‑mac‑amd64](https://github.com/Spuds0588/local-hub-launcher/releases/download/v1.0.0/HubLauncher-darwin-amd64) |
+| macOS (Apple Silicon) | [HubLauncher‑mac‑arm64](https://github.com/Spuds0588/local-hub-launcher/releases/download/v1.0.0/HubLauncher-darwin-arm64) |
+| Linux (64‑bit) | [HubLauncher‑linux‑amd64](https://github.com/Spuds0588/local-hub-launcher/releases/download/v1.0.0/HubLauncher-linux-amd64) |
+
+> **Tip:** All binaries are under 12 MB and have no external dependencies.
+
+---
+
+## 🖥️ What the System Tray Looks Like
+<p align="center"><img src="assets/tray_mockup.png" alt="System Tray Mockup" width="300"></p>
+
+The tiny icon lives in your OS tray. Clicking it opens a clean dropdown menu with the three actions listed above. No console window appears (Windows uses `-H=windowsgui`).
+
+---
+
+## 🔐 Security at a Glance
+- **Local‑only network.** The server binds only to `127.0.0.1` – nothing leaves your computer.
+- **Headers set for safety.** `X-Content-Type-Options: nosniff` and `X-Frame-Options: DENY` prevent click‑jacking or MIME‑type confusion.
+- **No background telemetry.** The binary does not contact any external service unless you explicitly open a link.
+
+---
+
+## 🛠️ Building Your Own Version (Optional)
+If you like to tinker, the source is on GitHub. The build uses pure‑Go and the `gogpu/systray` library, so cross‑compiling is straightforward:
+```bash
+# Example – build a Windows binary on any host
+GOOS=windows GOARCH=amd64 go build -ldflags="-s -w -H=windowsgui" -o HubLauncher.exe
+```
+
+---
+
+## 📄 License
+MIT – see the [LICENSE](LICENSE) file.
+
+---
+
+Enjoy a secure, zero‑admin way to keep all your favorite single‑file web tools handy, right from your tray!
 
 <p align="center">
   <img src="assets/logo.png" width="120" height="120" alt="Universal Local Hub Launcher Logo">
