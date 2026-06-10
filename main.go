@@ -1,6 +1,8 @@
 package main
 
 import (
+	_ "embed"
+	"fmt"
 	"html/template"
 	"io/fs"
 	"net/http"
@@ -10,11 +12,17 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/gogpu/systray"
 )
 
 // Fixed, predictable port for documentation, job aids, and intranet links
 const ServicePort = "8999"
 const DefaultFolderName = "InternalTools"
+
+// Embed the project logo image as the system tray icon
+//go:embed assets/logo.png
+var logoBytes []byte
 
 // Resolves the absolute path to the directory containing the tools
 func getToolsDir() string {
@@ -153,8 +161,40 @@ func main() {
 	time.Sleep(150 * time.Millisecond)
 	openBrowser("http://" + serverAddress)
 
-	// Keep parent thread alive without chewing processing loops
-	select {}
+	// 4. Run the System Tray interface
+	runTray(serverAddress, toolsDir)
+}
+
+func runTray(serverAddress string, toolsDir string) {
+	tray := systray.New()
+	tray.SetIcon(logoBytes)
+	tray.SetTooltip("Universal Local Hub Launcher")
+
+	menu := systray.NewMenu()
+
+	menu.Add("Open Hub Dashboard", func() {
+		openBrowser("http://" + serverAddress)
+	})
+
+	menu.Add("Open Tools Folder", func() {
+		openToolsFolder(toolsDir)
+	})
+
+	menu.AddSeparator()
+
+	menu.Add("Exit Gateway", func() {
+		tray.Remove()
+		os.Exit(0)
+	})
+
+	tray.SetMenu(menu)
+	tray.Show()
+
+	if err := tray.Run(); err != nil {
+		fmt.Printf("System Tray execution error: %v\n", err)
+		// Fall back to keep-alive loop if tray fails (e.g. in headless environments)
+		select {}
+	}
 }
 
 func openBrowser(url string) {
@@ -170,6 +210,23 @@ func openBrowser(url string) {
 	default:
 		cmd = "xdg-open"
 		args = []string{url}
+	}
+	_ = exec.Command(cmd, args...).Start()
+}
+
+func openToolsFolder(dirPath string) {
+	var cmd string
+	var args []string
+	switch runtime.GOOS {
+	case "windows":
+		cmd = "explorer"
+		args = []string{dirPath}
+	case "darwin":
+		cmd = "open"
+		args = []string{dirPath}
+	default:
+		cmd = "xdg-open"
+		args = []string{dirPath}
 	}
 	_ = exec.Command(cmd, args...).Start()
 }
